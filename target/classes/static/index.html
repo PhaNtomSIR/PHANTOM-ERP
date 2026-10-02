@@ -1,0 +1,2185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PHANTOM-ERP Enterprise Suite - Unified Central ERP</title>
+  <link rel="icon" type="image/png" href="/img/phantom-icon.png">
+  <link rel="stylesheet" href="/css/app.css">
+  <!-- Chart.js for executive analytics -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<!-- ================= 0. ENTERPRISE LOGIN GATEWAY ================= -->
+<div class="login-overlay" id="loginOverlay" style="display:none;">
+  <div class="login-container">
+    <div class="login-brand">
+      <div class="login-logo-icon">
+        <img src="/img/phantom-icon.png" alt="PHANTOM-ERP Logo">
+      </div>
+      <div class="login-titles">
+        <h2>PHANTOM-ERP Enterprise Suite</h2>
+        <p>Unified Enterprise Resource Planning & Single Source of Truth</p>
+      </div>
+    </div>
+
+    <div class="login-security-notice">
+      <span>🔒 Authorized Corporate Access &bull; TLS 1.3 End-to-End Encrypted</span>
+    </div>
+
+    <form id="formLogin" onsubmit="app.handleLoginSubmit(event)">
+      <div id="loginErrorMessage" class="login-error-box" style="display:none;"></div>
+
+      <div class="form-group" style="margin-bottom:14px;">
+        <label class="form-label" for="loginUsername" style="color:#cbd5e1; font-weight:600; font-size:0.8rem;">Corporate Username or Email</label>
+        <div class="input-with-icon">
+          <span class="input-icon">👤</span>
+          <input type="text" id="loginUsername" class="form-control" placeholder="e.g. admin or sarah.hr" required autocomplete="username" />
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom:14px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+          <label class="form-label" for="loginPassword" style="color:#cbd5e1; font-weight:600; font-size:0.8rem; margin-bottom:0;">Corporate Password</label>
+          <a href="javascript:void(0)" onclick="app.toggleLoginPasswordVisibility()" id="btnTogglePassword" style="font-size:0.75rem; color:#38bdf8; text-decoration:none;">Show</a>
+        </div>
+        <div class="input-with-icon">
+          <span class="input-icon">🔑</span>
+          <input type="password" id="loginPassword" class="form-control" placeholder="Enter corporate password" required autocomplete="current-password" />
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; font-size:0.8rem; color:#94a3b8;">
+        <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+          <input type="checkbox" id="loginRememberMe" checked /> Remember session on this workstation
+        </label>
+        <span style="color:#64748b;">Enterprise SSO</span>
+      </div>
+
+      <button type="submit" class="btn btn-primary" id="btnLoginSubmit" style="width:100%; justify-content:center; padding:12px; font-size:0.95rem; font-weight:700; background:linear-gradient(135deg, #0284c7 0%, #2563eb 100%);">
+        <span>🔐 Authenticate & Enter System</span>
+      </button>
+    </form>
+
+    <div class="login-demo-section">
+      <div class="login-demo-divider">
+        <span>1-CLICK QUICK ACCESS BY ROLE</span>
+      </div>
+      <div class="demo-accounts-grid">
+        <button type="button" class="demo-account-chip" onclick="app.quickLogin('admin', 'admin123')">
+          <span class="demo-chip-avatar">👑</span>
+          <div class="demo-chip-text">
+            <strong>Super Administrator</strong>
+            <small>admin / admin123</small>
+          </div>
+        </button>
+        <button type="button" class="demo-account-chip" onclick="app.quickLogin('sarah.hr', 'hr123')">
+          <span class="demo-chip-avatar">👥</span>
+          <div class="demo-chip-text">
+            <strong>HR & Talent Director</strong>
+            <small>sarah.hr / hr123</small>
+          </div>
+        </button>
+        <button type="button" class="demo-account-chip" onclick="app.quickLogin('marcus.fin', 'finance123')">
+          <span class="demo-chip-avatar">💰</span>
+          <div class="demo-chip-text">
+            <strong>Chief Financial Officer</strong>
+            <small>marcus.fin / finance123</small>
+          </div>
+        </button>
+        <button type="button" class="demo-account-chip" onclick="app.quickLogin('david.ops', 'ops123')">
+          <span class="demo-chip-avatar">⚙️</span>
+          <div class="demo-chip-text">
+            <strong>Chief Operating Officer</strong>
+            <small>david.ops / ops123</small>
+          </div>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="app-layout">
+  
+  <!-- Left Sidebar Navigation -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-icon">
+        <img src="/img/phantom-icon.png" alt="PHANTOM-ERP Logo">
+      </div>
+      <div class="brand-info">
+        <h1>PHANTOM-ERP</h1>
+        <span>Enterprise Resource Platform</span>
+      </div>
+    </div>
+    
+    <ul class="nav-menu">
+      <li class="nav-section-title">Overview</li>
+      <li class="nav-item active" data-tab="dashboard">
+        <span class="nav-icon">📊</span>
+        <span>Executive Dashboard</span>
+      </li>
+      
+      <li class="nav-section-title">Core Modules</li>
+      <li class="nav-item" data-tab="finance">
+        <span class="nav-icon">💰</span>
+        <span>Finance & General Ledger</span>
+      </li>
+      <li class="nav-dropdown-group" id="navGroupHr">
+        <div class="nav-item nav-dropdown-toggle" data-tab="hr" id="navItemHr" onclick="app.handleHrNavClick(event)">
+          <div class="nav-item-content">
+            <span class="nav-icon">👥</span>
+            <span>Human Resources (HR)</span>
+          </div>
+          <span class="nav-dropdown-caret" id="hrCaret">▾</span>
+        </div>
+        <ul class="nav-submenu" id="hrSubmenu">
+          <li class="nav-subitem active" data-subtab="overview" onclick="app.switchHrSubTab('overview', event)">
+            <span class="sub-bullet">●</span>
+            <span>HR Overview</span>
+          </li>
+          <li class="nav-subitem" data-subtab="requisitions" onclick="app.switchHrSubTab('requisitions', event)">
+            <span class="sub-bullet">●</span>
+            <span>Job Requisitions</span>
+            <span class="badge-mini" id="badgePendingReqs">1</span>
+          </li>
+          <li class="nav-subitem" data-subtab="recruitment" onclick="app.switchHrSubTab('recruitment', event)">
+            <span class="sub-bullet">●</span>
+            <span>Recruitment & Sectors</span>
+            <span class="badge-mini" id="badgeRecruitmentPosts" style="background:#8b5cf6; color:#ffffff;">2</span>
+          </li>
+          <li class="nav-subitem" data-subtab="directory" onclick="app.switchHrSubTab('directory', event)">
+            <span class="sub-bullet">●</span>
+            <span>Employee Directory</span>
+          </li>
+          <li class="nav-subitem" data-subtab="payroll" onclick="app.switchHrSubTab('payroll', event)">
+            <span class="sub-bullet">●</span>
+            <span>Payroll & Wages</span>
+          </li>
+          <li class="nav-subitem" data-subtab="leaves" onclick="app.switchHrSubTab('leaves', event)">
+            <span class="sub-bullet">●</span>
+            <span>Leave Requests</span>
+          </li>
+        </ul>
+      </li>
+      <li class="nav-item" data-tab="procurement">
+        <span class="nav-icon">🛒</span>
+        <span>Procurement & Supply Chain</span>
+      </li>
+      <li class="nav-item" data-tab="sales">
+        <span class="nav-icon">💼</span>
+        <span>Sales & CRM</span>
+      </li>
+      <li class="nav-item" data-tab="manufacturing">
+        <span class="nav-icon">⚙️</span>
+        <span>Manufacturing & Production</span>
+      </li>
+      <li class="nav-item" data-tab="inventory">
+        <span class="nav-icon">📦</span>
+        <span>Inventory & Warehouse</span>
+      </li>
+      
+      <li class="nav-section-title">Enterprise System</li>
+      <li class="nav-item" data-tab="deployment">
+        <span class="nav-icon">🌐</span>
+        <span>Deployment Architecture</span>
+      </li>
+      <li class="nav-item" data-tab="admin" id="navItemAdmin">
+        <span class="nav-icon">🛡️</span>
+        <span>Roles & Administration</span>
+        <span class="badge-mini" id="badgeAdminUsers" style="background:#0284c7; color:#fff;">5</span>
+      </li>
+      <li class="nav-item" data-tab="audit">
+        <span class="nav-icon">📜</span>
+        <span>System Audit Trail</span>
+      </li>
+    </ul>
+    
+    <div class="sidebar-footer">
+      <div class="deployment-badge">
+        <span class="status-dot"></span>
+        <span id="deploymentLabel">HYBRID CLOUD / ACTIVE</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main View Area -->
+  <div class="main-wrapper">
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <h1 class="page-title" id="currentViewTitle">Executive Dashboard</h1>
+      </div>
+      <div class="topbar-right">
+        <div class="db-pill">
+          <span>🗄️</span>
+          <span>Central Database: <strong>Single Source of Truth</strong></span>
+        </div>
+        
+        <!-- Authenticated User Profile Pill -->
+        <div class="user-profile-pill" id="headerUserProfile">
+          <div class="user-profile-avatar" id="headerUserAvatar">👨‍💼</div>
+          <div class="user-profile-meta">
+            <span class="user-profile-name" id="headerUserName">Dr. Alexander Wright</span>
+            <span class="user-profile-role" id="headerUserRole">Super Administrator</span>
+          </div>
+          <button class="btn btn-sm btn-outline-danger" title="Sign Out of Session" onclick="app.handleLogout(event)" style="margin-left:6px; padding:3px 7px; font-size:0.75rem; background:transparent; border:1px solid #ef4444; color:#ef4444; border-radius:4px; cursor:pointer;">
+            🚪 Exit
+          </button>
+        </div>
+
+        <button class="btn btn-secondary btn-sm" onclick="app.refreshCurrentTab()">
+          🔄 Refresh
+        </button>
+        <button class="btn btn-primary btn-sm" onclick="app.openQuickActionModal()">
+          ⚡ Quick Action
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Dynamic Content Container -->
+    <main class="content-area">
+
+      <!-- ================= 1. DASHBOARD TAB ================= -->
+      <section id="tab-dashboard" class="tab-panel active">
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-meta">
+              <h3>Total Revenue</h3>
+              <div class="kpi-value" id="kpiRevenue">$0.00</div>
+              <div class="kpi-sub" id="kpiNetMargin">Net Margin: $0.00</div>
+            </div>
+            <div class="kpi-icon-wrap icon-green">💵</div>
+          </div>
+          
+          <div class="kpi-card">
+            <div class="kpi-meta">
+              <h3>Inventory Valuation</h3>
+              <div class="kpi-value" id="kpiValuation">$0.00</div>
+              <div class="kpi-sub" id="kpiProductsCount">0 Items in Stock</div>
+            </div>
+            <div class="kpi-icon-wrap icon-blue">📦</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-meta">
+              <h3>Active Headcount</h3>
+              <div class="kpi-value" id="kpiHeadcount">0</div>
+              <div class="kpi-sub" id="kpiDeptsCount">Across 6 Departments</div>
+            </div>
+            <div class="kpi-icon-wrap icon-cyan">👥</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-meta">
+              <h3>Operational Orders</h3>
+              <div class="kpi-value" id="kpiOpenOrders">0</div>
+              <div class="kpi-sub" id="kpiOrderSplit">Sales & Procurement</div>
+            </div>
+            <div class="kpi-icon-wrap icon-amber">📑</div>
+          </div>
+        </div>
+
+        <!-- Charts Grid -->
+        <div class="charts-grid">
+          <div class="card">
+            <div class="card-header">
+              <h2>📈 Financial Performance (P&L Breakdown)</h2>
+            </div>
+            <div class="card-body">
+              <canvas id="financialChart" height="130"></canvas>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h2>🏢 Department Budget Share</h2>
+            </div>
+            <div class="card-body">
+              <canvas id="departmentChart" height="130"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Real-Time Activity Stream -->
+        <div class="card">
+          <div class="card-header">
+            <h2>⚡ Live Real-Time Inter-Departmental Activity Stream</h2>
+            <span class="badge badge-info">Automated Event Pipeline</span>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Timestamp</th>
+                    <th>Module</th>
+                    <th>Action</th>
+                    <th>Reference</th>
+                    <th>User / Service</th>
+                    <th>Details</th>
+                  </tr>
+                </thead>
+                <tbody id="dashboardAuditTable">
+                  <tr><td colspan="6" style="text-align:center;">Loading real-time events...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 2. FINANCE & GENERAL LEDGER TAB ================= -->
+      <section id="tab-finance" class="tab-panel">
+        <div class="action-bar">
+          <div style="display:flex; gap:10px;">
+            <button class="btn btn-primary" onclick="app.openModal('modalNewJournal')">+ New Journal Entry</button>
+            <button class="btn btn-secondary" onclick="app.openModal('modalNewAccount')">+ Add Account</button>
+          </div>
+          <div class="db-pill">
+            Double-Entry Accounting Verification: <strong>Balanced</strong>
+          </div>
+        </div>
+
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-meta">
+              <h3>Total Assets</h3>
+              <div class="kpi-value" id="finTotalAssets">$0.00</div>
+            </div>
+            <div class="kpi-icon-wrap icon-blue">🏛️</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-meta">
+              <h3>Total Liabilities</h3>
+              <div class="kpi-value" id="finTotalLiab">$0.00</div>
+            </div>
+            <div class="kpi-icon-wrap icon-amber">⚖️</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-meta">
+              <h3>Total Equity</h3>
+              <div class="kpi-value" id="finTotalEquity">$0.00</div>
+            </div>
+            <div class="kpi-icon-wrap icon-cyan">📈</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-meta">
+              <h3>Net Operating Profit</h3>
+              <div class="kpi-value" id="finNetProfit">$0.00</div>
+            </div>
+            <div class="kpi-icon-wrap icon-green">💎</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2>📑 Chart of Accounts</h2>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Account Code</th>
+                    <th>Account Name</th>
+                    <th>Category</th>
+                    <th>Current Balance</th>
+                    <th>Description</th>
+                  </tr>
+                </thead>
+                <tbody id="chartOfAccountsTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2>📜 Recent General Ledger Journal Entries</h2>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Entry #</th>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th>Source Module</th>
+                    <th>Ref #</th>
+                    <th>Total Debit</th>
+                    <th>Total Credit</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="journalEntriesTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2>🧾 Invoices (Accounts Receivable & Accounts Payable)</h2>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Invoice #</th>
+                    <th>Type</th>
+                    <th>Counterparty</th>
+                    <th>Order Ref</th>
+                    <th>Due Date</th>
+                    <th>Amount</th>
+                    <th>Paid</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="invoicesTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 3. HUMAN RESOURCES (HR) TAB ================= -->
+      <section id="tab-hr" class="tab-panel">
+        <!-- HR Sub-Navigation Pills -->
+        <div class="sub-nav-tabs">
+          <button class="sub-tab-btn active" id="hrSubTab-overview" onclick="app.filterHrView('overview')">
+            <span>📊 HR Overview</span>
+          </button>
+          <button class="sub-tab-btn" id="hrSubTab-requisitions" onclick="app.filterHrView('requisitions')">
+            <span>📋 Job Requisitions</span>
+            <span class="sub-tab-badge" id="pillReqCount">3</span>
+          </button>
+          <button class="sub-tab-btn" id="hrSubTab-recruitment" onclick="app.filterHrView('recruitment')">
+            <span>📢 Recruitment Posts (LinkedIn & BDJobs)</span>
+            <span class="sub-tab-badge" id="pillRecruitmentCount" style="background:#7c3aed;">2</span>
+          </button>
+          <button class="sub-tab-btn" id="hrSubTab-directory" onclick="app.filterHrView('directory')">
+            <span>👥 Employee Directory</span>
+          </button>
+          <button class="sub-tab-btn" id="hrSubTab-payroll" onclick="app.filterHrView('payroll')">
+            <span>💳 Payroll & Wages</span>
+          </button>
+          <button class="sub-tab-btn" id="hrSubTab-leaves" onclick="app.filterHrView('leaves')">
+            <span>🏖️ Leave Requests</span>
+          </button>
+        </div>
+
+        <div class="action-bar">
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="btn btn-purple" onclick="app.openNewRecruitmentPostModal()">📢 + Multi-Channel Job Post</button>
+            <button class="btn btn-primary" onclick="app.openNewRequisitionModal()">📋 + New Job Requisition</button>
+            <button class="btn btn-secondary" onclick="app.openManageChannelsModal()">⚙️ Connected Sectors</button>
+            <button class="btn btn-secondary" onclick="app.openModal('modalNewEmployee')">+ Add Employee</button>
+            <button class="btn btn-success" onclick="app.openModal('modalRunPayroll')">💳 Execute Monthly Payroll</button>
+            <button class="btn btn-secondary" onclick="app.openModal('modalNewLeave')">+ Request Leave</button>
+          </div>
+        </div>
+
+        <!-- 1. JOB REQUISITIONS SECTION -->
+        <div class="card hr-module-card" id="hrCard-requisitions">
+          <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+            <div>
+              <h2>📋 Job Requisitions (Internal Hiring Requests)</h2>
+              <p style="font-size:0.8rem; color:var(--text-muted); margin-top:3px;">
+                Formal internal documents submitted by hiring managers to initiate the recruitment process for new or vacant positions.
+              </p>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="app.openNewRequisitionModal()">+ Submit Requisition</button>
+          </div>
+          <div class="card-body">
+            <!-- Requisition KPIs -->
+            <div class="req-kpi-grid">
+              <div class="kpi-card" style="padding:14px;">
+                <div class="kpi-meta">
+                  <h3 style="font-size:0.75rem;">Total Requisitions</h3>
+                  <div class="kpi-value" id="kpiTotalReqs" style="font-size:1.4rem;">0</div>
+                </div>
+                <div class="kpi-icon-wrap icon-blue">📋</div>
+              </div>
+              <div class="kpi-card" style="padding:14px;">
+                <div class="kpi-meta">
+                  <h3 style="font-size:0.75rem;">Pending Approval</h3>
+                  <div class="kpi-value" id="kpiPendingReqs" style="font-size:1.4rem; color:#f59e0b;">0</div>
+                </div>
+                <div class="kpi-icon-wrap icon-amber">⏳</div>
+              </div>
+              <div class="kpi-card" style="padding:14px;">
+                <div class="kpi-meta">
+                  <h3 style="font-size:0.75rem;">Active Recruitment</h3>
+                  <div class="kpi-value" id="kpiActiveReqs" style="font-size:1.4rem; color:#10b981;">0</div>
+                </div>
+                <div class="kpi-icon-wrap icon-green">🚀</div>
+              </div>
+              <div class="kpi-card" style="padding:14px;">
+                <div class="kpi-meta">
+                  <h3 style="font-size:0.75rem;">Approved Headcount</h3>
+                  <div class="kpi-value" id="kpiTotalOpenings" style="font-size:1.4rem; color:#8b5cf6;">0</div>
+                </div>
+                <div class="kpi-icon-wrap icon-purple">🎯</div>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Req #</th>
+                    <th>Position Title</th>
+                    <th>Department</th>
+                    <th>Team</th>
+                    <th>Hiring Manager</th>
+                    <th>Openings</th>
+                    <th>Type / Level</th>
+                    <th>Target Salary</th>
+                    <th>Target Start</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="jobRequisitionsTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. RECRUITMENT MULTI-CHANNEL & CONNECTED SECTORS SECTION -->
+        <div class="card hr-module-card" id="hrCard-recruitment">
+          <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+            <div>
+              <h2>📢 Multi-Sector Recruitment Posts & Automated Job Board Broadcasting</h2>
+              <p style="font-size:0.8rem; color:var(--text-muted); margin-top:3px;">
+                Publish job circulars directly from PHANTOM-ERP to connected recruitment networks (LinkedIn, BDJobs, Indeed, and Corporate Portal) with synchronized live tracking.
+              </p>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button class="btn btn-secondary btn-sm" onclick="app.openManageChannelsModal()">⚙️ Connected Sectors</button>
+              <button class="btn btn-purple btn-sm" onclick="app.openNewRecruitmentPostModal()">📢 + Create Recruitment Post</button>
+            </div>
+          </div>
+          <div class="card-body">
+            <!-- Connected Recruitment Platforms Ribbon -->
+            <div style="margin-bottom:14px; display:flex; justify-content:space-between; align-items:center;">
+              <h3 style="font-size:0.88rem; color:#94a3b8; text-transform:uppercase; letter-spacing:0.04em;">🌐 Integrated Recruitment Sectors</h3>
+              <span style="font-size:0.75rem; color:#10b981; font-weight:600;">● Live API Bridges Active</span>
+            </div>
+
+            <div class="channels-strip" id="channelsStatusStrip">
+              <!-- Dynamically populated with LinkedIn, BDJobs, Indeed, and Corporate Portal cards -->
+            </div>
+
+            <!-- Recruitment Performance KPIs -->
+            <div class="req-kpi-grid">
+              <div class="kpi-card" style="padding:14px;">
+                <div class="kpi-meta">
+                  <h3 style="font-size:0.75rem;">Multi-Channel Posts</h3>
+                  <div class="kpi-value" id="kpiTotalPosts" style="font-size:1.4rem;">0</div>
+                </div>
+                <div class="kpi-icon-wrap icon-purple">📢</div>
+              </div>
+              <div class="kpi-card" style="padding:14px;">
+                <div class="kpi-meta">
+                  <h3 style="font-size:0.75rem;">Connected Sectors</h3>
+                  <div class="kpi-value" id="kpiConnectedChannels" style="font-size:1.4rem; color:#10b981;">4 / 4</div>
+                </div>
+                <div class="kpi-icon-wrap icon-green">🔌</div>
+              </div>
+              <div class="kpi-card" style="padding:14px;">
+                <div class="kpi-meta">
+                  <h3 style="font-size:0.75rem;">Candidate Impressions</h3>
+                  <div class="kpi-value" id="kpiTotalViews" style="font-size:1.4rem; color:#38bdf8;">0</div>
+                </div>
+                <div class="kpi-icon-wrap icon-blue">👁️</div>
+              </div>
+              <div class="kpi-card" style="padding:14px;">
+                <div class="kpi-meta">
+                  <h3 style="font-size:0.75rem;">Applications Received</h3>
+                  <div class="kpi-value" id="kpiTotalApplicants" style="font-size:1.4rem; color:#f59e0b;">0</div>
+                </div>
+                <div class="kpi-icon-wrap icon-amber">📥</div>
+              </div>
+            </div>
+
+            <!-- Recruitment Posts Table -->
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Post #</th>
+                    <th>Role Title</th>
+                    <th>Dept & Location</th>
+                    <th>Type / Exp</th>
+                    <th>Compensation Band</th>
+                    <th>Connected Sectors & Live Status</th>
+                    <th>Applicants</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="recruitmentPostsTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="card hr-module-card" id="hrCard-directory">
+          <div class="card-header">
+            <h2>👥 Employee Directory</h2>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Emp ID</th>
+                    <th>Full Name</th>
+                    <th>Department</th>
+                    <th>Job Title</th>
+                    <th>Team</th>
+                    <th>Email</th>
+                    <th>Annual Salary</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="employeesTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="charts-grid hr-module-card" id="hrCard-deptAndLeaves">
+          <div class="card" id="hrCard-departments">
+            <div class="card-header">
+              <h2>🏢 Corporate Departments</h2>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Code</th>
+                      <th>Department</th>
+                      <th>Manager</th>
+                      <th>Annual Budget</th>
+                      <th>Location</th>
+                    </tr>
+                  </thead>
+                  <tbody id="departmentsTable"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" id="hrCard-leaves">
+            <div class="card-header">
+              <h2>🏖️ Leave Requests</h2>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Employee</th>
+                      <th>Type</th>
+                      <th>Dates</th>
+                      <th>Days</th>
+                      <th>Status</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="leaveRequestsTable"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card hr-module-card" id="hrCard-payroll">
+          <div class="card-header">
+            <h2>💳 Payroll History & Wage Disbursements</h2>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Payroll #</th>
+                    <th>Employee</th>
+                    <th>Period</th>
+                    <th>Gross Pay</th>
+                    <th>Tax Withholding</th>
+                    <th>Net Disbursed</th>
+                    <th>Disbursement Date</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="payrollTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 4. PROCUREMENT TAB ================= -->
+      <section id="tab-procurement" class="tab-panel">
+        <div class="action-bar">
+          <div style="display:flex; gap:10px;">
+            <button class="btn btn-primary" onclick="app.openModal('modalNewPO')">+ Create Purchase Order</button>
+            <button class="btn btn-secondary" onclick="app.openModal('modalNewVendor')">+ Add Vendor</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2>🛒 Purchase Orders (Supply Chain Inbound)</h2>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>PO Number</th>
+                    <th>Vendor</th>
+                    <th>Order Date</th>
+                    <th>Expected Delivery</th>
+                    <th>Items</th>
+                    <th>Total Cost</th>
+                    <th>Status</th>
+                    <th>Automated Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="purchaseOrdersTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2>🏭 Approved Vendors & Suppliers</h2>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Vendor Code</th>
+                    <th>Company Name</th>
+                    <th>Contact Person</th>
+                    <th>Email / Phone</th>
+                    <th>Payment Terms</th>
+                    <th>Rating</th>
+                    <th>Balance Due (AP)</th>
+                  </tr>
+                </thead>
+                <tbody id="vendorsTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 5. SALES & CRM TAB ================= -->
+      <section id="tab-sales" class="tab-panel">
+        <div class="action-bar">
+          <div style="display:flex; gap:10px;">
+            <button class="btn btn-primary" onclick="app.openModal('modalNewSO')">+ New Sales Order</button>
+            <button class="btn btn-secondary" onclick="app.openModal('modalNewCustomer')">+ Add Customer</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2>💼 Commercial Sales Orders</h2>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Order #</th>
+                    <th>Customer</th>
+                    <th>Order Date</th>
+                    <th>Items Ordered</th>
+                    <th>Total Value</th>
+                    <th>Status</th>
+                    <th>Automated Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="salesOrdersTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2>🤝 Customer Portfolio & Accounts Receivable</h2>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Code</th>
+                    <th>Customer Name</th>
+                    <th>Contact</th>
+                    <th>Email</th>
+                    <th>Credit Limit</th>
+                    <th>Outstanding AR</th>
+                  </tr>
+                </thead>
+                <tbody id="customersTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 6. MANUFACTURING & PRODUCTION TAB ================= -->
+      <section id="tab-manufacturing" class="tab-panel">
+        <div class="action-bar">
+          <div style="display:flex; gap:10px;">
+            <button class="btn btn-primary" onclick="app.openModal('modalNewWO')">+ Create Work Order</button>
+            <button class="btn btn-secondary" onclick="app.openModal('modalNewBOM')">+ Define Bill of Materials (BOM)</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2>⚙️ Plant Work Orders (Production Runs)</h2>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>WO #</th>
+                    <th>Finished Product</th>
+                    <th>Target Qty</th>
+                    <th>Completed Qty</th>
+                    <th>Due Date</th>
+                    <th>Supervisor</th>
+                    <th>Status</th>
+                    <th>Automated Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="workOrdersTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2>📐 Bills of Materials (BOM Recipes)</h2>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>BOM Code</th>
+                    <th>Finished Product</th>
+                    <th>Description</th>
+                    <th>Required Components</th>
+                    <th>Labor Cost / Unit</th>
+                    <th>Std Hours</th>
+                  </tr>
+                </thead>
+                <tbody id="bomsTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 7. INVENTORY TAB ================= -->
+      <section id="tab-inventory" class="tab-panel">
+        <div class="action-bar">
+          <button class="btn btn-primary" onclick="app.openModal('modalNewProduct')">+ Add Product SKU</button>
+          <div id="lowStockWarningBadge" style="display:none;" class="badge badge-danger">
+            ⚠️ Low Stock Warnings Present
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2>📦 Item Master Catalog & Stock Levels</h2>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>SKU</th>
+                    <th>Product Name</th>
+                    <th>Category</th>
+                    <th>Stock on Hand</th>
+                    <th>Reorder Point</th>
+                    <th>Unit Cost</th>
+                    <th>Selling Price</th>
+                    <th>Total Value</th>
+                    <th>Warehouse Location</th>
+                    <th>Alert</th>
+                  </tr>
+                </thead>
+                <tbody id="productsTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2>🔄 Real-Time Stock Movement Audit Trail</h2>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Timestamp</th>
+                    <th>Product</th>
+                    <th>Movement Type</th>
+                    <th>Quantity Change</th>
+                    <th>Balance After</th>
+                    <th>Reference</th>
+                    <th>Notes</th>
+                  </tr>
+                </thead>
+                <tbody id="stockMovementsTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 8. DEPLOYMENT ARCHITECTURE TAB ================= -->
+      <section id="tab-deployment" class="tab-panel">
+        <div class="arch-card">
+          <h2>🌐 Enterprise Resource Planning (ERP) Deployment Topologies</h2>
+          <p style="color: #94a3b8; margin-top: 6px; font-size: 0.9rem;">
+            ERP systems operate across distinct deployment models based on compliance, operational latency, and scalability requirements.
+          </p>
+
+          <div class="arch-grid">
+            <div class="arch-box">
+              <h4>☁️ Cloud-Based (SaaS)</h4>
+              <p>Hosted on multi-tenant or dedicated managed hyperscaler cloud infrastructure (AWS, Azure, GCP).</p>
+              <ul class="arch-features">
+                <li>Automated zero-downtime upgrades</li>
+                <li>Dynamic horizontal auto-scaling</li>
+                <li>Low upfront CapEx / OPEX subscription</li>
+                <li>Global high-availability multi-region replicas</li>
+              </ul>
+            </div>
+
+            <div class="arch-box">
+              <h4>🏢 On-Premises</h4>
+              <p>Installed directly on customer-owned bare metal or private virtualization cluster in local corporate datacenter.</p>
+              <ul class="arch-features">
+                <li>Total sovereign control over sensitive financial data</li>
+                <li>Strict regulatory compliance (defense, banking, healthcare)</li>
+                <li>Zero external dependency on internet backbones</li>
+                <li>Direct integration with local SCADA / PLC devices</li>
+              </ul>
+            </div>
+
+            <div class="arch-box">
+              <h4>⚡ Hybrid Architecture</h4>
+              <p>Synchronizes local edge nodes (plant floor manufacturing & warehouse scanners) with cloud central ERP.</p>
+              <ul class="arch-features">
+                <li>Offline local factory operational continuity</li>
+                <li>Asynchronous central database replication</li>
+                <li>Best of both worlds: Cloud analytics + Local speed</li>
+                <li>Active bidirectional event streams</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2>🗄️ Central Database & System Topology Information</h2>
+          </div>
+          <div class="card-body">
+            <table class="data-table">
+              <tbody>
+                <tr>
+                  <td><strong>Current Server Runtime:</strong></td>
+                  <td>Java 21 (Eclipse Temurin LTS 64-Bit) on Spring Boot 3.3.4</td>
+                </tr>
+                <tr>
+                  <td><strong>Database Type:</strong></td>
+                  <td>Relational Unified Store (In-Memory H2 for development; switchable to PostgreSQL / Oracle / MS SQL for production)</td>
+                </tr>
+                <tr>
+                  <td><strong>Web & DB Port:</strong></td>
+                  <td>Port 8080 (Web UI & REST APIs) / <code>/h2-console</code> (Direct Database Inspection)</td>
+                </tr>
+                <tr>
+                  <td><strong>Single Source of Truth:</strong></td>
+                  <td>Connected cross-table foreign key constraints linking Finance, HR, Procurement, Sales, and Manufacturing.</td>
+                </tr>
+                <tr>
+                  <td><strong>Real-Time Automation:</strong></td>
+                  <td>Transactional workflows auto-dispatch inventory, generate AP/AR invoices, and post balanced GL journal entries upon trigger.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 9. AUDIT TRAIL TAB ================= -->
+      <section id="tab-audit" class="tab-panel">
+        <div class="card">
+          <div class="card-header">
+            <h2>📜 Enterprise Master Audit Log</h2>
+            <span class="badge badge-secondary">Real-Time Immutable Audit Trail</span>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Timestamp</th>
+                    <th>Module</th>
+                    <th>Action</th>
+                    <th>Entity Code</th>
+                    <th>Performed By</th>
+                    <th>System Audit Details</th>
+                  </tr>
+                </thead>
+                <tbody id="fullAuditTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 10. ROLES & ADMINISTRATION TAB ================= -->
+      <section id="tab-admin" class="tab-panel">
+        <div class="card">
+          <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+            <div>
+              <h2>🛡️ Roles & System Administration</h2>
+              <p style="font-size:0.8rem; color:var(--text-muted); margin-top:3px;">
+                Manage enterprise user accounts, assign Role-Based Access Control (RBAC) permissions, and enforce central governance.
+              </p>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button class="btn btn-purple btn-sm" onclick="app.openNewRoleModal()">🛡️ + Define New Role</button>
+              <button class="btn btn-primary btn-sm" onclick="app.openNewUserModal()">👥 + Add User Account</button>
+            </div>
+          </div>
+          <div class="card-body">
+            <!-- Administration KPIs -->
+            <div class="req-kpi-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); margin-bottom: 20px;">
+              <div class="kpi-card" style="padding:14px;">
+                <div class="kpi-meta">
+                  <h3 style="font-size:0.75rem;">Total Accounts</h3>
+                  <div class="kpi-value" id="kpiAdminTotalUsers" style="font-size:1.4rem;">0</div>
+                </div>
+                <div class="kpi-icon-wrap icon-blue">👥</div>
+              </div>
+              <div class="kpi-card" style="padding:14px;">
+                <div class="kpi-meta">
+                  <h3 style="font-size:0.75rem;">Active Roles</h3>
+                  <div class="kpi-value" id="kpiAdminRoles" style="font-size:1.4rem; color:#8b5cf6;">0</div>
+                </div>
+                <div class="kpi-icon-wrap icon-purple">🛡️</div>
+              </div>
+              <div class="kpi-card" style="padding:14px;">
+                <div class="kpi-meta">
+                  <h3 style="font-size:0.75rem;">Privileged Admins</h3>
+                  <div class="kpi-value" id="kpiAdminPrivileged" style="font-size:1.4rem; color:#f59e0b;">0</div>
+                </div>
+                <div class="kpi-icon-wrap icon-amber">👑</div>
+              </div>
+              <div class="kpi-card" style="padding:14px;">
+                <div class="kpi-meta">
+                  <h3 style="font-size:0.75rem;">Security Score</h3>
+                  <div class="kpi-value" id="kpiAdminSecurityScore" style="font-size:1.4rem; color:#10b981;">98%</div>
+                </div>
+                <div class="kpi-icon-wrap icon-green">🔒</div>
+              </div>
+              <div class="kpi-card" style="padding:14px;">
+                <div class="kpi-meta">
+                  <h3 style="font-size:0.75rem;">Active Sessions</h3>
+                  <div class="kpi-value" id="kpiAdminSessions" style="font-size:1.4rem; color:#0284c7;">1</div>
+                </div>
+                <div class="kpi-icon-wrap icon-blue">⚡</div>
+              </div>
+            </div>
+
+            <!-- Sub Navigation Ribbon -->
+            <div class="sub-tab-nav" style="margin-bottom:18px;">
+              <button class="sub-tab-btn active" id="adminSubTab-users" onclick="app.switchAdminSubTab('users')">
+                <span>👥 User Accounts</span>
+                <span class="sub-tab-badge" id="pillAdminUserCount">5</span>
+              </button>
+              <button class="sub-tab-btn" id="adminSubTab-roles" onclick="app.switchAdminSubTab('roles')">
+                <span>🛡️ Roles & Permissions Matrix</span>
+                <span class="sub-tab-badge" id="pillAdminRoleCount">5</span>
+              </button>
+              <button class="sub-tab-btn" id="adminSubTab-audit" onclick="app.switchAdminSubTab('audit')">
+                <span>📜 Security & Auth Audit</span>
+              </button>
+              <button class="sub-tab-btn" id="adminSubTab-policies" onclick="app.switchAdminSubTab('policies')">
+                <span>⚙️ Governance Policies</span>
+              </button>
+            </div>
+
+            <!-- 1. USER ACCOUNTS SUB-PANEL -->
+            <div id="adminCard-users">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; gap:10px; flex-wrap:wrap;">
+                <div style="display:flex; gap:10px; align-items:center;">
+                  <input type="text" id="adminSearchUsers" class="form-control" placeholder="🔍 Search users by name or email..." oninput="app.filterAdminUsers()" style="max-width:280px;" />
+                  <select id="adminFilterRole" class="form-control" onchange="app.filterAdminUsers()" style="max-width:200px;">
+                    <option value="">All Roles</option>
+                  </select>
+                </div>
+                <button class="btn btn-primary btn-sm" onclick="app.openNewUserModal()">+ Add New User</button>
+              </div>
+
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>User</th>
+                      <th>Username & Email</th>
+                      <th>Department & Title</th>
+                      <th>Assigned Role</th>
+                      <th>Status</th>
+                      <th>Last Login</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="adminUsersTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- 2. ROLES & PERMISSIONS SUB-PANEL -->
+            <div id="adminCard-roles" style="display:none;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h3 style="font-size:0.95rem; color:#475569;">Enterprise Role Hierarchy & Granular Authorization Matrix</h3>
+                <button class="btn btn-purple btn-sm" onclick="app.openNewRoleModal()">+ Create Custom Role</button>
+              </div>
+              <div class="roles-grid" id="adminRolesGrid"></div>
+            </div>
+
+            <!-- 3. SECURITY AUDIT SUB-PANEL -->
+            <div id="adminCard-audit" style="display:none;">
+              <div style="margin-bottom:12px;">
+                <h3 style="font-size:0.95rem; color:#475569;">Security, Access & Administrative Action Trail</h3>
+              </div>
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Timestamp</th>
+                      <th>Action</th>
+                      <th>Actor</th>
+                      <th>Target Entity</th>
+                      <th>Event Details</th>
+                    </tr>
+                  </thead>
+                  <tbody id="adminAuditTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- 4. GOVERNANCE POLICIES SUB-PANEL -->
+            <div id="adminCard-policies" style="display:none;">
+              <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:16px;">
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
+                  <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                    <span style="font-size:1.3rem;">🗄️</span>
+                    <strong style="color:#0f172a;">Single Source of Truth (SSOT)</strong>
+                  </div>
+                  <p style="font-size:0.82rem; color:#64748b; line-height:1.5;">
+                    Centralized H2/PostgreSQL transaction lock prevents data fragmentation across HR, Finance, Procurement, and Manufacturing.
+                  </p>
+                  <span class="badge badge-success" style="margin-top:8px;">● Enforced Active</span>
+                </div>
+
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
+                  <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                    <span style="font-size:1.3rem;">🛡️</span>
+                    <strong style="color:#0f172a;">Role-Based Access Control (RBAC)</strong>
+                  </div>
+                  <p style="font-size:0.82rem; color:#64748b; line-height:1.5;">
+                    Hierarchical permissions ensure users can only inspect and transact modules permitted by their corporate security tier.
+                  </p>
+                  <span class="badge badge-success" style="margin-top:8px;">● Tier-1 Active</span>
+                </div>
+
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
+                  <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                    <span style="font-size:1.3rem;">🔐</span>
+                    <strong style="color:#0f172a;">Cryptographic Session Policy</strong>
+                  </div>
+                  <p style="font-size:0.82rem; color:#64748b; line-height:1.5;">
+                    UUID tokens with automated session invalidation on logout. Password complexity baseline enforced.
+                  </p>
+                  <span class="badge badge-success" style="margin-top:8px;">● High Compliance</span>
+                </div>
+
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:16px;">
+                  <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                    <span style="font-size:1.3rem;">📜</span>
+                    <strong style="color:#0f172a;">Immutable Audit Log Standard</strong>
+                  </div>
+                  <p style="font-size:0.82rem; color:#64748b; line-height:1.5;">
+                    Every authorization, status modification, recruitment broadcast, and financial entry creates an unalterable audit record.
+                  </p>
+                  <span class="badge badge-success" style="margin-top:8px;">● Real-Time Enabled</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- ================= MODALS ================= -->
+
+<!-- Quick Action Modal -->
+<div class="modal-overlay" id="modalQuickAction">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h3 class="modal-title">⚡ Quick ERP Actions</h3>
+      <button class="close-btn" onclick="app.closeModal('modalQuickAction')">&times;</button>
+    </div>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+      <button class="btn btn-secondary" onclick="app.switchTab('sales'); app.closeModal('modalQuickAction'); app.openModal('modalNewSO')">💼 New Sales Order</button>
+      <button class="btn btn-secondary" onclick="app.switchTab('procurement'); app.closeModal('modalQuickAction'); app.openModal('modalNewPO')">🛒 New Purchase Order</button>
+      <button class="btn btn-secondary" onclick="app.switchTab('manufacturing'); app.closeModal('modalQuickAction'); app.openModal('modalNewWO')">⚙️ New Work Order</button>
+      <button class="btn btn-secondary" onclick="app.switchTab('hr'); app.closeModal('modalQuickAction'); app.openModal('modalRunPayroll')">💳 Run Monthly Payroll</button>
+      <button class="btn btn-secondary" onclick="app.switchTab('finance'); app.closeModal('modalQuickAction'); app.openModal('modalNewJournal')">💰 New Journal Entry</button>
+      <button class="btn btn-secondary" onclick="app.switchTab('inventory'); app.closeModal('modalQuickAction'); app.openModal('modalNewProduct')">📦 New Product SKU</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: New Product -->
+<div class="modal-overlay" id="modalNewProduct">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h3 class="modal-title">📦 Add New Product / SKU</h3>
+      <button class="close-btn" onclick="app.closeModal('modalNewProduct')">&times;</button>
+    </div>
+    <form id="formNewProduct" onsubmit="app.handleNewProduct(event)">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">SKU Code</label>
+          <input type="text" class="form-control" name="sku" required placeholder="e.g. RAW-MOTOR-02">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Product Name</label>
+          <input type="text" class="form-control" name="name" required placeholder="e.g. Brushless 60V Motor">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select class="form-control" name="category" required>
+            <option value="RAW_MATERIAL">Raw Material</option>
+            <option value="COMPONENT">Component</option>
+            <option value="FINISHED_GOOD">Finished Good</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Unit of Measure</label>
+          <input type="text" class="form-control" name="unitOfMeasure" value="PCS" required>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Unit Cost ($)</label>
+          <input type="number" step="0.01" class="form-control" name="unitCost" required value="50.00">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Selling Price ($)</label>
+          <input type="number" step="0.01" class="form-control" name="sellingPrice" value="0.00">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Initial Stock</label>
+          <input type="number" class="form-control" name="currentStock" value="10" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Min Stock Level (Alert)</label>
+          <input type="number" class="form-control" name="minStockLevel" value="5" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Warehouse Location</label>
+        <input type="text" class="form-control" name="warehouseLocation" placeholder="Bay 3, Shelf A">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="app.closeModal('modalNewProduct')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Product</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Create & Multi-Channel Broadcast Recruitment Post -->
+<div class="modal-overlay" id="modalNewRecruitmentPost">
+  <div class="modal-dialog" style="max-width:720px;">
+    <div class="modal-header">
+      <h3 class="modal-title">📢 Multi-Sector Recruitment Post Broadcast</h3>
+      <button class="close-btn" onclick="app.closeModal('modalNewRecruitmentPost')">&times;</button>
+    </div>
+    <form id="formNewRecruitmentPost" onsubmit="app.handleNewRecruitmentPost(event)">
+      <p style="font-size:0.84rem; color:var(--text-muted); margin-bottom:14px;">
+        Publish an official recruitment circular from PHANTOM-ERP. Once submitted, it will be automatically posted to all selected connected platforms (LinkedIn, BDJobs, Indeed, Corporate Career Portal) via live API bridges.
+      </p>
+
+      <div style="background:#1e293b; padding:12px 14px; border-radius:6px; margin-bottom:16px; border:1px dashed #475569;">
+        <label class="form-label" style="color:#38bdf8; font-size:0.8rem; margin-bottom:4px;">⚡ Quick Autofill from Approved Job Requisition</label>
+        <select class="form-control" id="selectPostFromReq" onchange="app.handleImportRequisition(this.value)">
+          <option value="">-- Choose Approved Requisition to Autofill (Optional) --</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Posting Reference Code</label>
+          <input type="text" class="form-control" name="postingCode" id="newPostCode" required placeholder="POST-2026-003">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Position / Job Title</label>
+          <input type="text" class="form-control" name="jobTitle" id="newPostTitle" required placeholder="e.g. Senior Full-Stack Engineer">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Department</label>
+          <select class="form-control" name="departmentId" id="selectPostDept" required></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Team / Sub-unit</label>
+          <input type="text" class="form-control" name="team" id="newPostTeam" placeholder="e.g. Core Engineering">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Job Location</label>
+          <input type="text" class="form-control" name="location" id="newPostLocation" required value="Dhaka, Bangladesh / Silicon Valley (Hybrid)">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Employment Type</label>
+          <select class="form-control" name="employmentType" id="newPostEmpType">
+            <option value="Full-time">Full-time</option>
+            <option value="Part-time">Part-time</option>
+            <option value="Contract">Contract</option>
+            <option value="Remote">Remote</option>
+            <option value="Internship">Internship</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Experience Level</label>
+          <select class="form-control" name="experienceLevel" id="newPostExpLevel">
+            <option value="Entry-level">Entry-level</option>
+            <option value="Mid-level">Mid-level</option>
+            <option value="Senior" selected>Senior</option>
+            <option value="Lead / Principal">Lead / Principal</option>
+            <option value="Executive">Executive</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Target Salary Display</label>
+          <input type="text" class="form-control" name="salaryDisplay" id="newPostSalary" required placeholder="e.g. $110,000 - $135,000 / year or BDT 150,000 - 200,000">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Application Deadline</label>
+          <input type="date" class="form-control" name="applicationDeadline" id="newPostDeadline" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Linked Requisition ID (Optional)</label>
+          <input type="number" class="form-control" name="requisitionId" id="newPostReqId" readonly placeholder="None">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Post Summary / Social Headline</label>
+        <input type="text" class="form-control" name="summary" id="newPostSummary" required placeholder="e.g. Join our robotics engineering team shaping autonomous supply chains.">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Role Description & Responsibilities</label>
+        <textarea class="form-control" name="description" id="newPostDesc" rows="3" required placeholder="Provide an engaging role overview and core day-to-day responsibilities..."></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Key Requirements & Skills</label>
+          <textarea class="form-control" name="requirements" id="newPostReqs" rows="2" placeholder="Required degrees, technologies, languages, experience..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Compensation & Benefits</label>
+          <textarea class="form-control" name="benefits" id="newPostBenefits" rows="2" placeholder="Healthcare, bonuses, equity, learning stipends..."></textarea>
+        </div>
+      </div>
+
+      <!-- Connected Sectors Multi-Select Matrix -->
+      <div style="margin-top:10px; margin-bottom:16px;">
+        <label class="form-label" style="font-weight:700; color:#38bdf8;">🌐 Select Recruitment Sectors to Auto-Post Directly:</label>
+        <div class="channel-selector-grid">
+          <label class="channel-check-card">
+            <input type="checkbox" name="postChannels" value="LINKEDIN" checked>
+            <div>
+              <div style="font-size:0.85rem; font-weight:700; color:#f8fafc;">💼 LinkedIn Talent Solutions</div>
+              <div style="font-size:0.7rem; color:#94a3b8;">Auto-publish to LinkedIn Jobs & Feed</div>
+            </div>
+          </label>
+          <label class="channel-check-card">
+            <input type="checkbox" name="postChannels" value="BDJOBS" checked>
+            <div>
+              <div style="font-size:0.85rem; font-weight:700; color:#f8fafc;">🇧🇩 BDJobs Corporate Gateway</div>
+              <div style="font-size:0.7rem; color:#94a3b8;">Publish verified circular to BDJobs network</div>
+            </div>
+          </label>
+          <label class="channel-check-card">
+            <input type="checkbox" name="postChannels" value="INDEED" checked>
+            <div>
+              <div style="font-size:0.85rem; font-weight:700; color:#f8fafc;">🔍 Indeed Recruiter</div>
+              <div style="font-size:0.7rem; color:#94a3b8;">Syndicate to global search index</div>
+            </div>
+          </label>
+          <label class="channel-check-card">
+            <input type="checkbox" name="postChannels" value="CAREERS_PORTAL" checked>
+            <div>
+              <div style="font-size:0.85rem; font-weight:700; color:#f8fafc;">🌐 PHANTOM-ERP Careers Portal</div>
+              <div style="font-size:0.7rem; color:#94a3b8;">Direct instant website posting</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="app.closeModal('modalNewRecruitmentPost')">Cancel</button>
+        <button type="submit" class="btn btn-purple">🚀 Publish & Auto-Post to Selected Sectors</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Multi-Channel Post Distribution Dossier -->
+<div class="modal-overlay" id="modalViewRecruitmentPost">
+  <div class="modal-dialog" style="max-width:700px;">
+    <div class="modal-header">
+      <h3 class="modal-title" id="viewPostTitle">📢 Multi-Sector Distribution Dossier</h3>
+      <button class="close-btn" onclick="app.closeModal('modalViewRecruitmentPost')">&times;</button>
+    </div>
+    <div class="modal-body" style="padding:20px;" id="viewPostBody">
+      <!-- Injected by JavaScript -->
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" onclick="app.closeModal('modalViewRecruitmentPost')">Close</button>
+      <div id="viewPostActions" style="display:inline-flex; gap:8px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Manage Connected Recruitment Channels -->
+<div class="modal-overlay" id="modalManageChannels">
+  <div class="modal-dialog" style="max-width:650px;">
+    <div class="modal-header">
+      <h3 class="modal-title">⚙️ Integrated Recruitment Sectors & API Bridges</h3>
+      <button class="close-btn" onclick="app.closeModal('modalManageChannels')">&times;</button>
+    </div>
+    <div class="modal-body" style="padding:20px;">
+      <p style="font-size:0.84rem; color:var(--text-muted); margin-bottom:16px;">
+        PHANTOM-ERP provides direct API bridges to major employment portals. Manage live connection status, API credentials, and automatic auto-post synchronization.
+      </p>
+      <div id="manageChannelsList" style="display:flex; flex-direction:column; gap:12px;">
+        <!-- Injected by JavaScript -->
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-primary" onclick="app.closeModal('modalManageChannels')">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: New Job Requisition -->
+<div class="modal-overlay" id="modalNewRequisition">
+  <div class="modal-dialog" style="max-width:650px;">
+    <div class="modal-header">
+      <h3 class="modal-title">📋 Create Job Requisition (Hiring Authorization Request)</h3>
+      <button class="close-btn" onclick="app.closeModal('modalNewRequisition')">&times;</button>
+    </div>
+    <form id="formNewRequisition" onsubmit="app.handleNewRequisition(event)">
+      <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:14px;">
+        Submit a formal internal document to initiate the talent recruitment process for a new or vacant position.
+      </p>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Requisition Number</label>
+          <input type="text" class="form-control" name="requisitionNumber" id="newReqNumber" required placeholder="REQ-2026-004">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Job Title / Position</label>
+          <input type="text" class="form-control" name="jobTitle" required placeholder="e.g. Senior DevOps Engineer">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Department</label>
+          <select class="form-control" name="departmentId" id="selectReqDept" required></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Team / Sub-unit</label>
+          <input type="text" class="form-control" name="team" placeholder="e.g. Robotics & Automation">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Hiring Manager</label>
+          <input type="text" class="form-control" name="hiringManager" required placeholder="e.g. Sarah Jenkins">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Openings / Headcount</label>
+          <input type="number" class="form-control" name="openingsCount" value="1" min="1" max="50" required>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Employment Type</label>
+          <select class="form-control" name="jobType">
+            <option value="Full-time">Full-time</option>
+            <option value="Part-time">Part-time</option>
+            <option value="Contract">Contract</option>
+            <option value="Internship">Internship</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Experience Level</label>
+          <select class="form-control" name="experienceLevel">
+            <option value="Entry-level">Entry-level</option>
+            <option value="Mid-level">Mid-level</option>
+            <option value="Senior" selected>Senior</option>
+            <option value="Lead / Principal">Lead / Principal</option>
+            <option value="Executive">Executive</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Min Annual Salary ($)</label>
+          <input type="number" step="1000" class="form-control" name="salaryMin" required value="85000">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Max Annual Salary ($)</label>
+          <input type="number" step="1000" class="form-control" name="salaryMax" required value="115000">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Target Start Date</label>
+          <input type="date" class="form-control" name="targetStartDate" id="reqTargetStartDate" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Initial Status</label>
+          <select class="form-control" name="status">
+            <option value="PENDING_APPROVAL" selected>Pending Approval (Hiring Manager Review)</option>
+            <option value="DRAFT">Draft</option>
+            <option value="APPROVED">Pre-Approved</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Business Justification / Reason for Hire</label>
+        <input type="text" class="form-control" name="reasonForHire" required placeholder="e.g. Plant capacity expansion for autonomous robotics assembly">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Job Description & Responsibilities</label>
+        <textarea class="form-control" name="description" rows="3" placeholder="Define key responsibilities, qualifications, and performance expectations..."></textarea>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="app.closeModal('modalNewRequisition')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Submit Job Requisition</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: View Job Requisition Details -->
+<div class="modal-overlay" id="modalViewRequisition">
+  <div class="modal-dialog" style="max-width:650px;">
+    <div class="modal-header">
+      <h3 class="modal-title" id="viewReqTitle">📋 Job Requisition Dossier</h3>
+      <button class="close-btn" onclick="app.closeModal('modalViewRequisition')">&times;</button>
+    </div>
+    <div class="modal-body" style="padding:20px;" id="viewReqBody">
+      <!-- Injected by JavaScript -->
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" onclick="app.closeModal('modalViewRequisition')">Close</button>
+      <div id="viewReqActions" style="display:inline-flex; gap:8px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: New Employee -->
+<div class="modal-overlay" id="modalNewEmployee">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h3 class="modal-title">👥 Hire / Add New Employee</h3>
+      <button class="close-btn" onclick="app.closeModal('modalNewEmployee')">&times;</button>
+    </div>
+    <form id="formNewEmployee" onsubmit="app.handleNewEmployee(event)">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Employee Code</label>
+          <input type="text" class="form-control" name="employeeCode" required placeholder="EMP-1008">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Department</label>
+          <select class="form-control" name="departmentId" id="selectEmployeeDept" required></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">First Name</label>
+          <input type="text" class="form-control" name="firstName" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Last Name</label>
+          <input type="text" class="form-control" name="lastName" required>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Job Title / Position</label>
+          <input type="text" class="form-control" name="position" required placeholder="e.g. Systems Engineer">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Team</label>
+          <input type="text" class="form-control" name="team" placeholder="e.g. Robotics & Automation">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-control" name="email" required>
+        </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Annual Salary ($)</label>
+          <input type="number" step="1000" class="form-control" name="salary" required value="75000">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Hire Date</label>
+          <input type="date" class="form-control" name="hireDate" id="empHireDate" required>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="app.closeModal('modalNewEmployee')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Hire Employee</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Run Monthly Payroll -->
+<div class="modal-overlay" id="modalRunPayroll">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h3 class="modal-title">💳 Process Monthly Corporate Payroll</h3>
+      <button class="close-btn" onclick="app.closeModal('modalRunPayroll')">&times;</button>
+    </div>
+    <form id="formRunPayroll" onsubmit="app.handleRunPayroll(event)">
+      <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:16px;">
+        Executing payroll will compute salaries, apply tax withholding, generate employee pay records, and automatically post balanced Journal Entries into the Finance General Ledger.
+      </p>
+      <div class="form-group">
+        <label class="form-label">Pay Period (YYYY-MM)</label>
+        <input type="text" class="form-control" name="period" value="2026-10" required>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="app.closeModal('modalRunPayroll')">Cancel</button>
+        <button type="submit" class="btn btn-success">Execute & Post to Finance</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: New Purchase Order -->
+<div class="modal-overlay" id="modalNewPO">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h3 class="modal-title">🛒 Create Procurement Purchase Order</h3>
+      <button class="close-btn" onclick="app.closeModal('modalNewPO')">&times;</button>
+    </div>
+    <form id="formNewPO" onsubmit="app.handleNewPO(event)">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">PO Number</label>
+          <input type="text" class="form-control" name="poNumber" id="poNumberInput" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Vendor</label>
+          <select class="form-control" name="vendorId" id="selectPoVendor" required></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Product to Procure</label>
+          <select class="form-control" name="productId" id="selectPoProduct" required></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Order Quantity</label>
+          <input type="number" class="form-control" name="quantity" value="25" min="1" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Procurement Notes</label>
+        <input type="text" class="form-control" name="notes" placeholder="Standard replenishment order">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="app.closeModal('modalNewPO')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Create Purchase Order</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: New Sales Order -->
+<div class="modal-overlay" id="modalNewSO">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h3 class="modal-title">💼 Create Sales Order</h3>
+      <button class="close-btn" onclick="app.closeModal('modalNewSO')">&times;</button>
+    </div>
+    <form id="formNewSO" onsubmit="app.handleNewSO(event)">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">SO Number</label>
+          <input type="text" class="form-control" name="soNumber" id="soNumberInput" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Customer</label>
+          <select class="form-control" name="customerId" id="selectSoCustomer" required></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Finished Good to Sell</label>
+          <select class="form-control" name="productId" id="selectSoProduct" required></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Quantity</label>
+          <input type="number" class="form-control" name="quantity" value="2" min="1" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Order Notes</label>
+        <input type="text" class="form-control" name="notes" placeholder="Delivery to main warehouse">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="app.closeModal('modalNewSO')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Create Sales Order</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: New Work Order -->
+<div class="modal-overlay" id="modalNewWO">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h3 class="modal-title">⚙️ Create Manufacturing Work Order</h3>
+      <button class="close-btn" onclick="app.closeModal('modalNewWO')">&times;</button>
+    </div>
+    <form id="formNewWO" onsubmit="app.handleNewWO(event)">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Work Order #</label>
+          <input type="text" class="form-control" name="woNumber" id="woNumberInput" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">BOM Assembly Recipe</label>
+          <select class="form-control" name="bomId" id="selectWoBom" required></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Target Units to Produce</label>
+          <input type="number" class="form-control" name="targetQuantity" value="5" min="1" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Plant Floor Supervisor</label>
+          <input type="text" class="form-control" name="supervisor" value="Marcus Vance" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Production Run Notes</label>
+        <input type="text" class="form-control" name="notes" placeholder="Scheduled plant run">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="app.closeModal('modalNewWO')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Launch Work Order</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Pay Invoice -->
+<div class="modal-overlay" id="modalPayInvoice">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h3 class="modal-title">💵 Process Invoice Payment</h3>
+      <button class="close-btn" onclick="app.closeModal('modalPayInvoice')">&times;</button>
+    </div>
+    <form id="formPayInvoice" onsubmit="app.handlePayInvoice(event)">
+      <input type="hidden" name="invoiceId" id="payInvoiceId">
+      <p id="payInvoiceDetails" style="font-size:0.9rem; margin-bottom:16px; color:#334155;"></p>
+      <div class="form-group">
+        <label class="form-label">Payment Amount ($)</label>
+        <input type="number" step="0.01" class="form-control" name="amount" id="payInvoiceAmount" required>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="app.closeModal('modalPayInvoice')">Cancel</button>
+        <button type="submit" class="btn btn-success">Record Payment</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: New Customer -->
+<div class="modal-overlay" id="modalNewCustomer">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h3 class="modal-title">🤝 Add Customer</h3>
+      <button class="close-btn" onclick="app.closeModal('modalNewCustomer')">&times;</button>
+    </div>
+    <form id="formNewCustomer" onsubmit="app.handleNewCustomer(event)">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Customer Code</label>
+          <input type="text" class="form-control" name="customerCode" required placeholder="CUST-104">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Company / Client Name</label>
+          <input type="text" class="form-control" name="name" required>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Contact Person</label>
+          <input type="text" class="form-control" name="contactPerson" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-control" name="email" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Credit Limit ($)</label>
+        <input type="number" class="form-control" name="creditLimit" value="50000" required>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="app.closeModal('modalNewCustomer')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Customer</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: New Vendor -->
+<div class="modal-overlay" id="modalNewVendor">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h3 class="modal-title">🏭 Add Approved Vendor</h3>
+      <button class="close-btn" onclick="app.closeModal('modalNewVendor')">&times;</button>
+    </div>
+    <form id="formNewVendor" onsubmit="app.handleNewVendor(event)">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Vendor Code</label>
+          <input type="text" class="form-control" name="vendorCode" required placeholder="VEN-004">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Company Name</label>
+          <input type="text" class="form-control" name="companyName" required>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Contact Person</label>
+          <input type="text" class="form-control" name="contactPerson" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-control" name="email" required>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Payment Terms</label>
+          <input type="text" class="form-control" name="paymentTerms" value="Net 30">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Rating (1.0 - 5.0)</label>
+          <input type="number" step="0.1" min="1" max="5" class="form-control" name="rating" value="4.8">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="app.closeModal('modalNewVendor')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Vendor</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: New User Account -->
+<div class="modal-overlay" id="modalNewUser">
+  <div class="modal-dialog" style="max-width:640px;">
+    <div class="modal-header">
+      <h3 class="modal-title">👥 Create Enterprise User Account</h3>
+      <button class="close-btn" onclick="app.closeModal('modalNewUser')">&times;</button>
+    </div>
+    <form id="formNewUser" onsubmit="app.handleNewUser(event)">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Username *</label>
+          <input type="text" class="form-control" name="username" placeholder="e.g. john.doe" required autocomplete="off" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Temporary Password *</label>
+          <input type="password" class="form-control" name="password" placeholder="Min 6 characters" required />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Full Name *</label>
+          <input type="text" class="form-control" name="fullName" placeholder="e.g. John Doe" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Corporate Email *</label>
+          <input type="email" class="form-control" name="email" placeholder="john.doe@phantom-erp.cloud" required />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Job Title</label>
+          <input type="text" class="form-control" name="jobTitle" placeholder="e.g. Staff Robotics Engineer" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Avatar Emoji</label>
+          <select class="form-control" name="avatar">
+            <option value="👨‍💼">👨‍💼 Executive / Manager</option>
+            <option value="👩‍💼">👩‍💼 Director / Lead</option>
+            <option value="🧑‍💻">🧑‍💻 Engineer / Tech</option>
+            <option value="👨‍🔬">👨‍🔬 Specialist / Researcher</option>
+            <option value="👤">👤 Standard User</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Assigned Role *</label>
+          <select class="form-control" name="roleId" id="newUserRoleSelect" required></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Department</label>
+          <select class="form-control" name="departmentId" id="newUserDeptSelect"></select>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="app.closeModal('modalNewUser')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Create User Account</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Edit User Account -->
+<div class="modal-overlay" id="modalEditUser">
+  <div class="modal-dialog" style="max-width:640px;">
+    <div class="modal-header">
+      <h3 class="modal-title">✏️ Edit User Governance</h3>
+      <button class="close-btn" onclick="app.closeModal('modalEditUser')">&times;</button>
+    </div>
+    <form id="formEditUser" onsubmit="app.handleUpdateUser(event)">
+      <input type="hidden" name="userId" id="editUserId" />
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Username (Immutable)</label>
+          <input type="text" class="form-control" name="username" id="editUserUsername" readonly style="background:#f1f5f9; cursor:not-allowed;" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Reset Password (Optional)</label>
+          <input type="password" class="form-control" name="password" placeholder="Leave blank to preserve" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Full Name *</label>
+          <input type="text" class="form-control" name="fullName" id="editUserFullName" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Corporate Email *</label>
+          <input type="email" class="form-control" name="email" id="editUserEmail" required />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Job Title</label>
+          <input type="text" class="form-control" name="jobTitle" id="editUserJobTitle" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Account Status</label>
+          <select class="form-control" name="status" id="editUserStatus">
+            <option value="ACTIVE">ACTIVE (Authorized Access)</option>
+            <option value="SUSPENDED">SUSPENDED (Access Blocked)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Assigned Role *</label>
+          <select class="form-control" name="roleId" id="editUserRoleSelect" required></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Department</label>
+          <select class="form-control" name="departmentId" id="editUserDeptSelect"></select>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="app.closeModal('modalEditUser')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: New Role Definition -->
+<div class="modal-overlay" id="modalNewRole">
+  <div class="modal-dialog" style="max-width:680px;">
+    <div class="modal-header">
+      <h3 class="modal-title">🛡️ Define Custom Enterprise Role</h3>
+      <button class="close-btn" onclick="app.closeModal('modalNewRole')">&times;</button>
+    </div>
+    <form id="formNewRole" onsubmit="app.handleNewRole(event)">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Role Code *</label>
+          <input type="text" class="form-control" name="roleCode" placeholder="e.g. ROLE_COMPLIANCE_OFFICER" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Role Display Name *</label>
+          <input type="text" class="form-control" name="name" placeholder="e.g. Compliance & Risk Director" required />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Description & Purpose</label>
+        <input type="text" class="form-control" name="description" placeholder="Summarize role scope and governance boundaries" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" style="font-weight:700; color:#0f172a;">Select Granular Permissions for Role:</label>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:10px; margin-top:8px;">
+          <label class="channel-check-card">
+            <input type="checkbox" name="rolePerms" value="MODULE_DASHBOARD" checked />
+            <span>📊 Dashboard Access</span>
+          </label>
+          <label class="channel-check-card">
+            <input type="checkbox" name="rolePerms" value="MODULE_HR" />
+            <span>👥 HR Module</span>
+          </label>
+          <label class="channel-check-card">
+            <input type="checkbox" name="rolePerms" value="HR_REQUISITIONS" />
+            <span>📋 Job Requisitions</span>
+          </label>
+          <label class="channel-check-card">
+            <input type="checkbox" name="rolePerms" value="HR_RECRUITMENT" />
+            <span>📢 Job Board Broadcast</span>
+          </label>
+          <label class="channel-check-card">
+            <input type="checkbox" name="rolePerms" value="MODULE_FINANCE" />
+            <span>💰 Finance & GL</span>
+          </label>
+          <label class="channel-check-card">
+            <input type="checkbox" name="rolePerms" value="FINANCE_POST" />
+            <span>💳 Post GL & Invoices</span>
+          </label>
+          <label class="channel-check-card">
+            <input type="checkbox" name="rolePerms" value="MODULE_PROCUREMENT" />
+            <span>🛒 Procurement & POs</span>
+          </label>
+          <label class="channel-check-card">
+            <input type="checkbox" name="rolePerms" value="MODULE_SALES" />
+            <span>💼 Sales & CRM</span>
+          </label>
+          <label class="channel-check-card">
+            <input type="checkbox" name="rolePerms" value="MODULE_MANUFACTURING" />
+            <span>⚙️ Manufacturing & BOM</span>
+          </label>
+          <label class="channel-check-card">
+            <input type="checkbox" name="rolePerms" value="MODULE_INVENTORY" />
+            <span>📦 Inventory Warehouse</span>
+          </label>
+          <label class="channel-check-card">
+            <input type="checkbox" name="rolePerms" value="MODULE_ADMIN" />
+            <span>🛡️ System Administration</span>
+          </label>
+          <label class="channel-check-card">
+            <input type="checkbox" name="rolePerms" value="ADMIN_USERS" />
+            <span>👤 User Governance</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="app.closeModal('modalNewRole')">Cancel</button>
+        <button type="submit" class="btn btn-purple">Register Role</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Toast Notifications Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- JavaScript Client Application -->
+<script src="/js/app.js"></script>
+</body>
+</html>
